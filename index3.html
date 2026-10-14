@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Number Structure Generator</title>
+	<style>
+		:root{--ink:#17202a;--muted:#667085;--line:#ded8c9;--accent:#d95d39;--dark:#a53d24}
+		*{box-sizing:border-box}body{margin:0;background:#e9efe7;color:var(--ink);font-family:Georgia,serif}
+		main{max-width:920px;margin:48px auto}.box{overflow:hidden;background:#fffdf8;box-shadow:0 18px 50px #17202a1f}
+		header{padding:36px 40px 22px;border-bottom:1px solid var(--line)}h1{margin:0;font-size:clamp(2rem,5vw,3.5rem)}
+		p{color:var(--muted)}.intro{max-width:620px}.eyebrow,label,button,#message,small{font-family:Arial,sans-serif}
+		.eyebrow{margin:0;color:var(--dark);font-size:.78rem;font-weight:bold;letter-spacing:.12em;text-transform:uppercase}
+		form{display:flex;flex-wrap:wrap;gap:12px;align-items:end;padding:24px 40px;background:#f3ead8}
+		label{display:grid;gap:7px;color:var(--muted);font-size:.82rem;font-weight:bold;text-transform:uppercase}
+		input,button{padding:12px 14px;border:1px solid var(--line);border-radius:4px;font-size:1rem}input{width:220px}
+		button{border:0;color:#fff;background:var(--accent);cursor:pointer;font-weight:bold}button:hover{background:var(--dark)}
+		#message{min-height:24px;margin:18px 40px 0;color:var(--dark);font-size:.92rem;font-weight:bold}
+		.summary,.patterns{display:grid;gap:12px;margin:0 40px}.summary{grid-template-columns:repeat(3,1fr);margin-bottom:28px}
+		.stat{padding:16px;border-left:4px solid var(--accent);background:#f8f4eb}.stat small{display:block;color:var(--muted);font-size:.75rem;font-weight:bold}.stat strong{font-size:1.6rem}
+		.patterns{grid-template-columns:1fr 1fr;margin-bottom:40px}.pattern{padding:20px;border:1px solid var(--line)}h2{font-size:1.25rem}
+		pre{min-height:180px;overflow:auto;margin:0;padding:16px;background:#f3f1eb}
+		.structure{margin:0 40px 40px;padding:18px 20px;border-top:3px solid var(--accent);background:#fff3e8}
+		.structure h2{margin:0 0 8px}.structure p{margin:0}
+		@media(max-width:650px){main{margin:20px 10px}header,form{padding:22px}#message,.summary,.patterns,.structure{margin-left:22px;margin-right:22px}.summary,.patterns{grid-template-columns:1fr}label,input,button{width:100%}}
+	</style>
+</head>
+<body>
+	<main><section class="box">
+		<header>
+			<p class="eyebrow">Pattern laboratory</p>
+			<h1>Number Structure Generator</h1>
+			<p class="intro">Enter a number from 10 to 999 to calculate its reverse, sum, mirrored pyramid, and hollow diamond.</p>
+		</header>
+
+		<form id="numberForm" novalidate>
+			<label>Number (10-999)<input id="numberInput" type="number" min="10" max="999" required></label>
+			<button>Generate structures</button>
+		</form>
+		<p id="message" role="alert"></p>
+
+		<section id="results" hidden>
+			<div class="summary">
+				<div class="stat">Original<strong id="originalValue"></strong></div>
+				<div class="stat">Reverse<strong id="reverseValue"></strong></div>
+				<div class="stat">Sum<strong id="sumValue"></strong></div>
+			</div>
+			<div class="patterns">
+				<article class="pattern"><h2>Mirrored number pyramid</h2><pre id="pyramidOutput"></pre></article>
+				<article class="pattern"><h2>Hollow diamond</h2><pre id="diamondOutput"></pre></article>
+			</div>
+			<section class="structure"><h2 id="structureTitle"></h2><p id="structureText"></p></section>
+		</section>
+	</section></main>
+
+	<script>
+		const $ = id => document.getElementById(id);
+		const form = $("numberForm"), input = $("numberInput");
+
+		const reverse = n => Number(String(n).split("").reverse().join(""));
+
+		function pyramid(sum) {
+			const height = String(sum).length, rows = [];
+			for (let row = 1; row <= height; row++) {
+				const down = Array.from({length: row}, (_, i) => row - i);
+				const up = Array.from({length: row - 1}, (_, i) => i + 2);
+				rows.push(" ".repeat((height - row) * 2) + [...down, ...up].join(" "));
+			}
+			return rows.join("\n");
+		}
+
+		function diamond(height) {
+			const rows = [];
+			for (let i = 1; i < height * 2; i++) {
+				const level = i > height ? height * 2 - i : i;
+				const inside = level < 2 ? "*" : `*${" ".repeat(level * 2 - 3)}*`;
+				rows.push(" ".repeat(height - level) + inside);
+			}
+			return rows.join("\n");
+		}
+
+		form.onsubmit = event => {
+			event.preventDefault();
+			const number = Number(input.value), message = $("message"), results = $("results");
+
+			if (!Number.isInteger(number) || number < 10 || number > 999) {
+				message.textContent = "Enter a whole number between 10 and 999.";
+				results.hidden = true;
+				input.focus();
+				return;
+			}
+
+			const reversed = reverse(number), sum = number + reversed;
+			const height = sum % 5 + 5, even = sum % 2 === 0;
+			message.textContent = "";
+			results.hidden = false;
+			$("originalValue").textContent = number;
+			$("reverseValue").textContent = reversed;
+			$("sumValue").textContent = sum;
+			$("pyramidOutput").textContent = pyramid(sum);
+			$("diamondOutput").textContent = diamond(height);
+			$("structureTitle").textContent = even ? "EVEN STRUCTURE" : "ODD STRUCTURE";
+			$("structureText").textContent = `The sum ${sum} is ${even ? "even" : "odd"}. Diamond height: ${height}.`;
+		};
+	</script>
+</body>
+</html>
